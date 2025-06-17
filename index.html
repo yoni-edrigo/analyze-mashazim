@@ -443,7 +443,8 @@
       }
 
       .progression-steps {
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         justify-content: space-between;
         align-items: flex-start;
         gap: 1rem;
@@ -459,6 +460,7 @@
         position: relative;
         border: 1px solid hsl(var(--border));
         background: hsl(var(--card));
+        height: 100%;
       }
 
       .progression-step::after {

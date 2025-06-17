@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>מערכת ניתוח מיומנויות אינטראקטיבית</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      :root {
+        --background: 0 0% 100%;
+        --foreground: 222.2 84% 4.9%;
+        --card: 0 0% 100%;
+        --card-foreground: 222.2 84% 4.9%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 222.2 84% 4.9%;
+        --primary: 221.2 83.2% 53.3%;
+        --primary-foreground: 210 40% 98%;
+        --secondary: 210 40% 96%;
+        --secondary-foreground: 222.2 84% 4.9%;
+        --muted: 210 40% 96%;
+        --muted-foreground: 215.4 16.3% 46.9%;
+        --accent: 210 40% 96%;
+        --accent-foreground: 222.2 84% 4.9%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 40% 98%;
+        --border: 214.3 31.8% 91.4%;
+        --input: 214.3 31.8% 91.4%;
+        --ring: 221.2 83.2% 53.3%;
+        --radius: 0.75rem;
+
+        /* Semantic color palette */
+        --emerald-50: 151 81% 96%;
+        --emerald-500: 160 84% 39%;
+        --emerald-600: 158 64% 52%;
+
+        --blue-50: 214 100% 97%;
+        --blue-500: 217 91% 60%;
+        --blue-600: 221 83% 53%;
+
+        --orange-50: 33 100% 96%;
+        --orange-500: 25 95% 53%;
+        --orange-600: 21 90% 48%;
+
+        --red-50: 0 86% 97%;
+        --red-500: 0 84% 60%;
+        --red-600: 0 72% 51%;
+
+        --purple-50: 270 100% 98%;
+        --purple-500: 262 83% 58%;
+        --purple-600: 263 70% 50%;
+
+        --gray-50: 210 40% 98%;
+        --gray-100: 210 40% 96%;
+        --gray-200: 214.3 31.8% 91.4%;
+        --gray-300: 213 27% 84%;
+        --gray-400: 215 20% 65%;
+        --gray-500: 215 16% 47%;
+        --gray-600: 215 19% 35%;
+        --gray-700: 215 25% 27%;
+        --gray-800: 217 33% 17%;
+        --gray-900: 222 84% 5%;
+      }
+
+      body {
+        font-family: "Calibri", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Roboto", sans-serif;
+        margin: 0;
+        padding: 1.5rem;
+        background: linear-gradient(
+          135deg,
+          hsl(var(--blue-50)),
+          hsl(var(--purple-50))
+        );
+        min-height: 100vh;
+        color: hsl(var(--foreground));
+        line-height: 1.6;
+        font-size: 16px;
+        letter-spacing: 0.01em;
+      }
+
+      .container {
+        background: hsl(var(--card));
+        border-radius: var(--radius);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+        max-width: 1600px;
+        margin: 0 auto;
+        border: 1px solid hsl(var(--border));
+      }
+
+      .header {
+        background: linear-gradient(
+          135deg,
+          hsl(var(--gray-900)),
+          hsl(var(--gray-800))
+        );
+        color: hsl(var(--primary-foreground));
+        padding: 2.5rem 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          135deg,
+          transparent,
+          rgba(255, 255, 255, 0.05)
+        );
+        pointer-events: none;
+      }
+
+      .header h1 {
+        margin: 0 0 0.75rem 0;
+        font-size: 2.75rem;
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        position: relative;
+        z-index: 1;
+      }
+
+      .header p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 1.25rem;
+        font-weight: 400;
+        position: relative;
+        z-index: 1;
+      }
+
+      .controls {
+        padding: 2rem;
+        background: hsl(var(--muted));
+        border-bottom: 1px solid hsl(var(--border));
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        align-items: flex-end;
+      }
+
+      .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-width: 140px;
+      }
+
+      .control-group label {
+        font-weight: 600;
+        color: hsl(var(--muted-foreground));
+        font-size: 0.875rem;
+        letter-spacing: 0.01em;
+      }
+
+      select,
+      input {
+        padding: 0.625rem 0.875rem;
+        border: 1px solid hsl(var(--border));
+        border-radius: calc(var(--radius) - 2px);
+        font-size: 0.875rem;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+        font-family: inherit;
+      }
+
+      select:focus,
+      input:focus {
+        outline: none;
+        border-color: hsl(var(--ring));
+        box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+      }
+
+      select:hover,
+      input:hover {
+        border-color: hsl(var(--gray-300));
+      }
+
+      .view-modes {
+        display: flex;
+        gap: 0.25rem;
+        margin-left: auto;
+        background: hsl(var(--background));
+        padding: 0.25rem;
+        border-radius: calc(var(--radius) - 2px);
+        border: 1px solid hsl(var(--border));
+      }
+
+      .view-btn {
+        padding: 0.625rem 1rem;
+        border: none;
+        border-radius: calc(var(--radius) - 4px);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 500;
+        font-size: 0.875rem;
+        color: hsl(var(--muted-foreground));
+        background: transparent;
+        font-family: inherit;
+        position: relative;
+      }
+
+      .view-btn.active {
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .view-btn:hover:not(.active) {
+        background: hsl(var(--accent));
+        color: hsl(var(--accent-foreground));
+      }
+
+      .stats-bar {
+        padding: 1.5rem 2rem;
+        background: hsl(var(--blue-50));
+        border-bottom: 1px solid hsl(var(--border));
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2rem;
+      }
+
+      .stat-item {
+        text-align: center;
+        flex: 1;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: hsl(var(--blue-600));
+        display: block;
+        line-height: 1;
+      }
+
+      .stat-label {
+        font-size: 0.875rem;
+        color: hsl(var(--muted-foreground));
+        font-weight: 500;
+        margin-top: 0.25rem;
+      }
+
+      .content {
+        padding: 2rem;
+      }
+
+      .table-container {
+        overflow-x: auto;
+        border-radius: var(--radius);
+        border: 1px solid hsl(var(--border));
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+        background: hsl(var(--card));
+      }
+
+      th {
+        background: hsl(var(--gray-900));
+        color: hsl(var(--primary-foreground));
+        padding: 1rem 0.75rem;
+        text-align: center;
+        font-weight: 600;
+        border: none;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        font-size: 0.875rem;
+        letter-spacing: 0.01em;
+      }
+
+      th.group-header {
+        background: hsl(var(--blue-600));
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        width: 140px;
+        min-width: 140px;
+      }
+
+      .skill-header {
+        background: hsl(var(--emerald-600)) !important;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+      }
+
+      .skill-header:hover {
+        background: hsl(var(--emerald-500)) !important;
+        transform: translateY(-1px);
+      }
+
+      .skill-header.highlighted {
+        background: hsl(var(--red-500)) !important;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.9;
+        }
+      }
+
+      td {
+        padding: 1rem 0.75rem;
+        border: 1px solid hsl(var(--border));
+        vertical-align: top;
+        line-height: 1.6;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .group-cell {
+        background: hsl(var(--gray-50));
+        font-weight: 600;
+        text-align: center;
+        color: hsl(var(--gray-800));
+        width: 140px;
+        min-width: 140px;
+        border-left: 4px solid hsl(var(--gray-400));
+      }
+
+      .content-cell {
+        background: hsl(var(--card));
+        font-size: 0.8125rem;
+        max-width: 280px;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .content-cell:hover {
+        background: hsl(var(--accent));
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 10;
+        border-color: hsl(var(--ring));
+      }
+
+      .content-cell.highlighted {
+        background: hsl(var(--orange-50)) !important;
+        border: 2px solid hsl(var(--orange-500)) !important;
+      }
+
+      .content-cell ul {
+        margin: 0.375rem 0;
+        padding-right: 1rem;
+      }
+
+      .content-cell li {
+        margin-bottom: 0.375rem;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        line-height: 1.5;
+      }
+
+      .content-cell li:hover {
+        color: hsl(var(--primary));
+        font-weight: 500;
+      }
+
+      .subcategory {
+        font-weight: 600;
+        color: hsl(var(--blue-600));
+        margin: 0.75rem 0 0.5rem 0;
+        padding: 0.5rem 0.75rem;
+        background: hsl(var(--blue-50));
+        border-radius: calc(var(--radius) - 4px);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid hsl(var(--blue-200));
+        font-size: 0.8125rem;
+      }
+
+      .subcategory:hover {
+        background: hsl(var(--blue-600));
+        color: hsl(var(--primary-foreground));
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .basic {
+        border-right: 4px solid hsl(var(--emerald-500));
+      }
+      .leadership {
+        border-right: 4px solid hsl(var(--orange-500));
+      }
+      .advanced {
+        border-right: 4px solid hsl(var(--blue-500));
+      }
+      .survival {
+        border-right: 4px solid hsl(var(--red-500));
+      }
+      .service {
+        border-right: 4px solid hsl(var(--purple-500));
+      }
+
+      .empty-cell {
+        text-align: center;
+        color: hsl(var(--muted-foreground));
+        font-style: italic;
+        background: hsl(var(--muted));
+      }
+
+      .progression-view {
+        display: none;
+      }
+
+      .progression-view.active {
+        display: block;
+      }
+
+      .skill-progression {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius);
+        background: hsl(var(--card));
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .skill-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: hsl(var(--foreground));
+        margin-bottom: 1.5rem;
+        text-align: center;
+        letter-spacing: -0.01em;
+      }
+
+      .progression-steps {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .progression-step {
+        flex: 1;
+        min-width: 220px;
+        padding: 1.25rem;
+        border-radius: var(--radius);
+        text-align: center;
+        position: relative;
+        border: 1px solid hsl(var(--border));
+        background: hsl(var(--card));
+      }
+
+      .progression-step::after {
+        content: "←";
+        position: absolute;
+        left: -0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.5rem;
+        color: hsl(var(--muted-foreground));
+        background: hsl(var(--background));
+        width: 1.5rem;
+        height: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 1px solid hsl(var(--border));
+      }
+
+      .progression-step:last-child::after {
+        display: none;
+      }
+
+      .step-header {
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        padding: 0.75rem;
+        border-radius: calc(var(--radius) - 2px);
+        color: white;
+        font-size: 0.875rem;
+      }
+
+      .step-content {
+        font-size: 0.8125rem;
+        text-align: right;
+        line-height: 1.6;
+      }
+
+      .comparison-view {
+        display: none;
+      }
+
+      .comparison-view.active {
+        display: block;
+      }
+
+      .comparison-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+      }
+
+      .comparison-card {
+        padding: 1.5rem;
+        border-radius: var(--radius);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        background: hsl(var(--card));
+        border: 1px solid hsl(var(--border));
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .comparison-card:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
+      }
+
+      .card-header {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border-radius: calc(var(--radius) - 2px);
+        text-align: center;
+        color: white;
+        letter-spacing: -0.01em;
+      }
+
+      .tooltip {
+        position: absolute;
+        background: hsl(var(--gray-900));
+        color: hsl(var(--primary-foreground));
+        padding: 0.75rem 1rem;
+        border-radius: calc(var(--radius) - 2px);
+        font-size: 0.8125rem;
+        max-width: 300px;
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        border: 1px solid hsl(var(--border));
+      }
+
+      .tooltip.show {
+        opacity: 1;
+      }
+
+      .search-highlight {
+        background: hsl(var(--orange-200)) !important;
+        font-weight: 600;
+        padding: 0.125rem 0.25rem;
+        border-radius: 0.25rem;
+        color: hsl(var(--orange-900));
+      }
+
+      @media (max-width: 768px) {
+        body {
+          padding: 1rem;
+        }
+
+        .header {
+          padding: 2rem 1.5rem;
+        }
+
+        .header h1 {
+          font-size: 2.25rem;
+        }
+
+        .controls {
+          flex-direction: column;
+          align-items: stretch;
+          padding: 1.5rem;
+        }
+
+        .view-modes {
+          margin: 0;
+          justify-content: center;
+        }
+
+        .progression-steps {
+          flex-direction: column;
+        }
+
+        .progression-step::after {
+          content: "↓";
+          left: 50%;
+          top: -0.75rem;
+          transform: translateX(-50%);
+        }
+
+        .content {
+          padding: 1.5rem;
+        }
+
+        .stats-bar {
+          padding: 1rem 1.5rem;
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+      }
+
+      /* Additional modern touches */
+      .table-container::-webkit-scrollbar {
+        height: 8px;
+      }
+
+      .table-container::-webkit-scrollbar-track {
+        background: hsl(var(--muted));
+        border-radius: 4px;
+      }
+
+      .table-container::-webkit-scrollbar-thumb {
+        background: hsl(var(--muted-foreground));
+        border-radius: 4px;
+      }
+
+      .table-container::-webkit-scrollbar-thumb:hover {
+        background: hsl(var(--foreground));
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>מערכת ניתוח מיומנויות השל"ח</h1>
+        <p>כלי לניתוח והבנת תהליכי פיתוח מיומנויות בקבוצות הכשרה שונות</p>
+      </div>
+
+      <div class="controls">
+        <div class="view-modes">
+          <button class="view-btn active" data-view="table">תצוגת טבלה</button>
+          <button class="view-btn" data-view="progression">
+            תצוגת התקדמות
+          </button>
+          <button class="view-btn" data-view="comparison">השוואה</button>
+        </div>
+
+        <div class="control-group">
+          <label>מסנן קבוצת הכשרה:</label>
+          <select id="groupFilter">
+            <option value="all">כל הקבוצות</option>
+            <option value="basic">פש"צים (בסיסי)</option>
+            <option value="leadership">מש"צים (הנהגה)</option>
+            <option value="advanced">מש"בים (סיוון)</option>
+            <option value="survival">מש"בים (הישרדות)</option>
+            <option value="service">ש"ש ב"ש</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label>מסנן מיומנות:</label>
+          <select id="skillFilter">
+            <option value="all">כל המיומנויות</option>
+            <option value="field">תרבות חיי שדה</option>
+            <option value="teaching">מיומנויות הדרכה</option>
+            <option value="social">מיומנויות חברתיות</option>
+            <option value="entrepreneurship">ביזמות ויוזמות</option>
+            <option value="leadership">מנהיגות</option>
+            <option value="management">ארגון ומנהלות</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label>חיפוש:</label>
+          <input type="text" id="searchInput" placeholder="חפש תוכן מסוים..." />
+        </div>
+
+        <div class="control-group">
+          <label>רמת פירוט:</label>
+          <select id="detailLevel">
+            <option value="full">פירוט מלא</option>
+            <option value="categories">קטגוריות בלבד</option>
+            <option value="summary">סיכום</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat-item">
+          <div class="stat-value" id="totalGroups">5</div>
+          <div class="stat-label">קבוצות הכשרה</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="totalSkills">6</div>
+          <div class="stat-label">מיומנויות</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="visibleCells">30</div>
+          <div class="stat-label">תאים מוצגים</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="searchResults">0</div>
+          <div class="stat-label">תוצאות חיפוש</div>
+        </div>
+      </div>
+
+      <div class="content">
+        <!-- Table View -->
+        <div id="tableView" class="table-view">
+          <div class="table-container">
+            <table id="skillsTable">
+              <thead>
+                <tr>
+                  <th class="group-header">קבוצת הכשרה</th>
+                  <th class="skill-header" data-skill="field">תרבות חיי שדה</th>
+                  <th class="skill-header" data-skill="teaching">
+                    מיומנויות הדרכה
+                  </th>
+                  <th class="skill-header" data-skill="social">
+                    מיומנויות חברתיות
+                  </th>
+                  <th class="skill-header" data-skill="entrepreneurship">
+                    ביזמות ויוזמות
+                  </th>
+                  <th class="skill-header" data-skill="leadership">מנהיגות</th>
+                  <th class="skill-header" data-skill="management">
+                    ארגון ומנהלות
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <!-- Table content will be generated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Progression View -->
+        <div id="progressionView" class="progression-view">
+          <div id="progressionContent">
+            <!-- Progression content will be generated by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Comparison View -->
+        <div id="comparisonView" class="comparison-view">
+          <div id="comparisonContent">
+            <!-- Comparison content will be generated by JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+      // Data structure
+      const skillsData = {
+        groups: {
+          basic: {
+            name: 'פש"צים (בסיסי)',
+            color: "hsl(160 84% 39%)",
+            class: "basic",
+          },
+          leadership: {
+            name: 'מש"צים (הנהגה)',
+            color: "hsl(25 95% 53%)",
+            class: "leadership",
+          },
+          advanced: {
+            name: 'מש"בים (סיוון)',
+            color: "hsl(217 91% 60%)",
+            class: "advanced",
+          },
+          survival: {
+            name: 'מש"בים (הישרדות)',
+            color: "hsl(0 84% 60%)",
+            class: "survival",
+          },
+          service: {
+            name: 'ש"ש ב"ש',
+            color: "hsl(262 83% 58%)",
+            class: "service",
+          },
+        },
+        skills: {
+          field: "תרבות חיי שדה",
+          teaching: "מיומנויות הדרכה",
+          social: "מיומנויות חברתיות",
+          entrepreneurship: "ביזמות ויוזמות",
+          leadership: "מנהיגות",
+          management: "ארגון ומנהלות",
+        },
+        content: {
+          basic: {
+            field: {
+              "התמצאות וניווט": [
+                "כיוונים כלליים (שושנת הרוחות)",
+                "הכרת תבליט (כיפה, גיא, אוכף, שלוחה)",
+                "מקרא מפה - תכסית",
+                "תרגול בסיסי של התאמת מפה לשטח",
+              ],
+              מחנאות: [
+                "שימוש בחבל",
+                "כפיתות בסיסיות (מרובעת, מקבילה, מוצלבת, שמינית)",
+                "בניית אוהל סיירים ואיגלו",
+                "בניית מדורה והדלקת אש",
+                "התארגנות בשדה",
+              ],
+              "טיילות וסירות": [
+                "הערכות לטיול",
+                "ציוד וביגוד מתאים",
+                "שמירה על הסביבה",
+                "בישולי שדה בסיסיים",
+              ],
+            },
+            teaching: {
+              "תכנון הדרכה": [
+                "איסוף ומיון ידע",
+                "הבחנה בין עיקר ותפל",
+                "בניית הדרכה על פי כרטיסיית הדרכה",
+              ],
+              "מתודות ועזרי הדרכה": [
+                "הבנת חשיבות המתודה",
+                "חשיפה לבנק מתודות",
+                "התאמת מתודה לגיל/מקום/נושא",
+              ],
+              "עמידה מול קהל": [
+                "טכניקות מסירה בסיסיות",
+                'נ"ס קתימב"ה: ניסוח, סביבה, קול, תנועה, ידיים, מבט, ביטחון, התלהבות',
+              ],
+              "נתינת משוב": [
+                "הבנת חשיבות המשוב",
+                "מבנה המשוב",
+                "כללים למתן משוב",
+              ],
+            },
+            social: {
+              "הפרט בקבוצה": [
+                "בירור יכולות אישיות",
+                "התבוננות עצמית - רפלקציה",
+              ],
+              "התנהלות בקבוצה": [
+                "מתן משוב לחברי הקבוצה",
+                "שיח סובלני ומכבד",
+                "הכלת השונה",
+              ],
+              "כוחה של קבוצה": ["הבנת הכוח של הקבוצה", 'העצמת הפרט ע"י הקבוצה'],
+            },
+            entrepreneurship: {
+              "אבני יסוד ביזמות": [
+                "חשיפה ראשונה לנושא היזמות",
+                "תולדות ומושגי יסוד",
+                "זיהוי צורך, משאבים, שותפים",
+              ],
+              "יוזמה הלכה למעשה": [
+                "דוגמאות ליוזמות",
+                "השתתפות ביוזמה בקבוצת שווים",
+                'יוזמה למען חברת ביה"ס',
+              ],
+              "עיבוד היוזמה": ["עיבוד בסיסי", "שאלת שאלות רפלקטיביות"],
+            },
+            leadership: {
+              "העצמה אישית": [
+                "יצירת מודעות ליכולת המנהיגותית",
+                "זיהוי היכולת המנהיגותית האישית",
+                "פיתוח מנהיגות אישית",
+                'חיזוק הזדהות עם ערכי השל"ח',
+              ],
+            },
+            management: {
+              בטיחות: [
+                "כללי בטיחות בהליכה",
+                "בטיחות בבישול שדה",
+                "בטיחות בבניה מחנאית",
+              ],
+              "ארגון ציוד": ["אריזת תיק לטיול יומי", "אריזת תיק למסע"],
+              כלכלה: ["בניית תפריט לארוחת עיקרית", "בניית תפריט לארוחה קרה"],
+            },
+          },
+          leadership: {
+            field: {
+              "התמצאות וניווט": [
+                "התנסות באמצעי ניווט (מצפן, מד קואורדינטות, מפה טופוגרפית)",
+                "מדידת אזימוט-טווח",
+                "ניווט בעזרת מפות שונות",
+                "שימוש בטכנולוגיה לניווט",
+              ],
+              מחנאות: [
+                "בניית מתקן מורכב",
+                "ניהול עבודת בניה",
+                "הקמת מחסה קבוצתי",
+                "הדלקת אש באבן אש",
+              ],
+              "טיילות וסירות": [
+                "בישולי שדה מתקדמים",
+                "עבודה עם סכין",
+                "תזונה נכונה בשדה",
+              ],
+            },
+            teaching: {
+              "תכנון הדרכה": [
+                "בניית פעילות בתכנון הדרכה",
+                "עבודה עם כרטיסיית הדרכה",
+                "בניית הדרכה מא-ת ויישומה",
+              ],
+              מתודות: [
+                "יצירת מתודה ייחודית",
+                "חשיבה יצירתית מחוץ לקופסא",
+                "התאמת מתודות לקהלים שונים",
+              ],
+              "עמידה מול קהל": [
+                "התמודדות עם אתגרים בקבוצה",
+                "ניהול הפרעות ומשתתפים מאתגרים",
+              ],
+              "נתינת משוב": [
+                "הרחבת המשוב ככלי להתקדמות",
+                "שאלות, תובנות, יעדים",
+              ],
+            },
+            social: {
+              "הפרט בקבוצה": [
+                "טיפוח חוזקות אישיות",
+                "פתרון בעיות ועמידה באתגרים",
+              ],
+              "התנהלות בקבוצה": [
+                "ניהול מחלוקות וריבוי דעות",
+                "לקיחת אחריות על תפקידים",
+              ],
+              "כוחה של קבוצה": ["התמודדות עם קשיים", "ערבות הדדית"],
+            },
+            entrepreneurship: {
+              "אבני יסוד ביזמות": [
+                "שלבים בהובלת יוזמה",
+                "תכנון מיזם מקצה לקצה",
+                "התמודדות עם אתגרים",
+              ],
+              "יוזמה הלכה למעשה": [
+                'הובלת יוזמה במעגלים קרובים לביה"ס',
+                "עבודה עם מרכזי יום, בתי ספר יסודיים",
+              ],
+              "עיבוד ובקרת היוזמה": ["בדיקה עצמית לכל שלבי המיזם"],
+            },
+            leadership: {
+              "העצמה בין אישית": [
+                "פיתוח מיומנויות תקשורת",
+                "שפת גוף, הקשבה ושיחה",
+                "הבנה של שייכות לקבוצת מנהיגות",
+                "התמודדות עם התנהגויות בקבוצה",
+              ],
+            },
+            management: {
+              בטיחות: ["העברת הוראות בטיחות", "שמירה על שגרת בטיחות"],
+              "ארגון ציוד": ["ארגון תיק ללינה", "ארגון ציוד ומנהלה קבוצתית"],
+              כלכלה: ["הקמה ותפעול מתקני בישול"],
+            },
+          },
+          advanced: {
+            field: {
+              "התמצאות וניווט": [
+                "תכנון מסלול מתקדם",
+                "קריאת מפה ברשת קואורדינטות",
+                'אומדן מרחקים ("שיטת האצבע")',
+                "מציאת הצפון באמצעים שונים",
+              ],
+              מחנאות: ["הדרכת שימוש בחבל", "יישום כלים שנרכשו בשלבים קודמים"],
+              "טיילות וסירות": [
+                "התאמה וכיוונון תרמיל",
+                "הרחבת תזונה בשטח",
+                "בישול חם וקר",
+              ],
+            },
+            teaching: {
+              "תכנון הדרכה": ["בניית הדרכה מא-ת", "הדרכה בנושא ניווטים"],
+              מתודות: ["יצירת מתודה ייחודית", "מתודות מתאימות לעולם הניווט"],
+              "עמידה מול קהל": [
+                "אתגר בתחום שאינו החוזק שלי",
+                "התמודדות עם אתגרים בהדרכה",
+              ],
+              "נתינת משוב": ["רפלקציה ושיקוף עצמי", "הרחבת המשוב ככלי"],
+            },
+            social: {
+              "הפרט בקבוצה": ["אימוץ יכולות חדשות", "התמודדות עם אי ודאות"],
+              "התנהלות בקבוצה": [
+                "התמצאות במרחב החברתי",
+                "ניהול מצבים חברתיים",
+                "הובלת יוזמות וניווט",
+              ],
+              "כוחה של קבוצה": ["עבודה משותפת בקבוצות משימה"],
+            },
+            entrepreneurship: {
+              "אבני יסוד ביזמות": [
+                "ניתוח יוזמות מוצלחות",
+                "בניית מודל הובלת יוזמה",
+                "שימוש בכלים שנרכשו",
+              ],
+              "יוזמה הלכה למעשה": [
+                "יוזמה מתמשכת",
+                'עבודה בסביבת ביה"ס או ברשות',
+              ],
+              "עיבוד ובקרת היוזמה": ["בדיקה עצמית מקיפה"],
+            },
+            leadership: {
+              "מנהיגות מחוללת שינוי": [
+                "הכרת תרבויות שונות בחברה הישראלית",
+                "רישות (networking)",
+                "יצירת שיתופי פעולה",
+              ],
+              "מנהיגות בתנאי אי ודאות": [
+                "ניהול קונפליקטים",
+                "התמודדות עם התנגדויות",
+              ],
+            },
+            management: {
+              בטיחות: ["בטיחות בניווט", "בטיחות בעבודה עם סכין"],
+              "ארגון ציוד": ["מנהלה ברמה קורסית", 'ארגון תיק "בית על הגב"'],
+              כלכלה: ["ניהול בישול קבוצתי/קורסי"],
+            },
+          },
+          survival: {
+            field: {
+              "התמצאות וניווט": ["יישום כלל המיומנויות הקודמות"],
+              מחנאות: ["יישום כלל המיומנויות הקודמות"],
+              "טיילות וסירות": [
+                "הקמת מחסה אישי/קבוצתי",
+                "גילוף מתקדם עם סכין",
+                "הדלקת אש בחיכוך",
+                "יישום כלל הכלים",
+              ],
+            },
+            teaching: {},
+            social: {
+              "הפרט בקבוצה": [
+                "התמודדות עם קשיים ומצבי קיצון",
+                "קבלת ומתן עזרה",
+              ],
+              "התנהלות בקבוצה": [
+                "ניהול עצמאי מוחלט של קבוצה",
+                "קבלת החלטות משותפות",
+              ],
+              "כוחה של קבוצה": ["ערבות הדדית מלאה"],
+            },
+            entrepreneurship: {
+              'אבני יסוד בשל"ח': ["חשיפה לשנת השרות"],
+              "יוזמה הלכה למעשה": ["יוזמה ברמה מחוזית/ארצית", "פרסום היוזמה"],
+              "בקרת יוזמה": ["בדיקה עצמית מקיפה"],
+            },
+            leadership: {
+              "הרחבת ההעצמה הקהילתית": [
+                "התנסות במנהיגות פעילה",
+                "רמה לאומית ובינלאומית",
+              ],
+            },
+            management: {
+              בטיחות: ["התנהגות בתנאי קיצון", "ניהול כלכלה עצמית וקבוצתית"],
+              "ארגון ציוד": ["ניהול מנהלה קורסית", "ארגון ציוד למסע ארוך"],
+              כלכלה: ["עבודה מול ספקים", "בישול קר וליקוט בסיסי"],
+            },
+          },
+          service: {
+            field: {
+              "התמצאות וניווט": ["התמצאות במרחב", "יישום תכנון מסלול"],
+              "טיילות וסירות": [
+                "שמירה על הסביבה",
+                "ציוד טיול מתאים",
+                "בטיחות והיגיינה בבישול",
+                "תזונה נכונה ובישול קר",
+              ],
+            },
+            teaching: {
+              "תכנון הדרכה": [
+                "בניית פעילות לתכנון הדרכה",
+                "בניית כרטיסיית הדרכה",
+              ],
+              "מתודות ועזרי הדרכה": ["מהי מתודה", "בנק מתודות", "התאמת מתודה"],
+              "נתינת משוב": [
+                "כללים למתן משוב",
+                "התנסות במתן משוב",
+                "יצירת אווירה חיובית",
+              ],
+              "עמידה מול קהל": [
+                "שפת גוף",
+                "דיבור בוטח",
+                "בקיאות בנושאי ההדרכה",
+              ],
+            },
+            social: {
+              "שיתוף פעולה": [
+                "עבודת צוות",
+                "ניהול עצמי וזמן",
+                "מנהיגות והובלה",
+                "קבלת החלטות",
+              ],
+              "ביטחון והערכה עצמית": [
+                "התמצאות במרחב",
+                "התמודדות במצבי לחץ",
+                "מסוגלות ולקיחת אחריות",
+              ],
+            },
+            entrepreneurship: {
+              "זיהוי צורך": ["בחירת פרויקט או יוזמה"],
+              "יישום יוזמה": ["הוצאת יוזמה לפועל"],
+            },
+            leadership: {
+              "העצמה אישית": [
+                "העצמת מנהיגות אישית",
+                'חיזוק הזדהות עם ערכי השל"ח',
+              ],
+            },
+            management: {},
+          },
+        },
+      };
+
+      // Application state
+      let currentFilters = {
+        group: "all",
+        skill: "all",
+        search: "",
+        detail: "full",
+      };
+
+      let currentView = "table";
+      let highlightedSkill = null;
+
+      // Initialize the application
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeEventListeners();
+        renderTable();
+        updateStats();
+      });
+
+      function initializeEventListeners() {
+        // View mode buttons
+        document.querySelectorAll(".view-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            switchView(this.dataset.view);
+          });
+        });
+
+        // Filter controls
+        document
+          .getElementById("groupFilter")
+          .addEventListener("change", function () {
+            currentFilters.group = this.value;
+            updateView();
+          });
+
+        document
+          .getElementById("skillFilter")
+          .addEventListener("change", function () {
+            currentFilters.skill = this.value;
+            updateView();
+          });
+
+        document
+          .getElementById("searchInput")
+          .addEventListener("input", function () {
+            currentFilters.search = this.value;
+            updateView();
+          });
+
+        document
+          .getElementById("detailLevel")
+          .addEventListener("change", function () {
+            currentFilters.detail = this.value;
+            updateView();
+          });
+
+        // Skill header clicks for highlighting
+        document.addEventListener("click", function (e) {
+          if (e.target.classList.contains("skill-header")) {
+            toggleSkillHighlight(e.target.dataset.skill);
+          }
+        });
+
+        // Tooltip functionality
+        document.addEventListener("mouseover", function (e) {
+          if (
+            e.target.classList.contains("content-cell") ||
+            e.target.classList.contains("subcategory")
+          ) {
+            showTooltip(e);
+          }
+        });
+
+        document.addEventListener("mouseout", function (e) {
+          hideTooltip();
+        });
+      }
+
+      function switchView(viewType) {
+        currentView = viewType;
+
+        // Update button states
+        document.querySelectorAll(".view-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        document
+          .querySelector(`[data-view="${viewType}"]`)
+          .classList.add("active");
+
+        // Hide all views
+        document
+          .querySelectorAll("#tableView, #progressionView, #comparisonView")
+          .forEach((view) => {
+            view.style.display = "none";
+          });
+
+        // Show selected view
+        switch (viewType) {
+          case "table":
+            document.getElementById("tableView").style.display = "block";
+            renderTable();
+            break;
+          case "progression":
+            document.getElementById("progressionView").style.display = "block";
+            renderProgressionView();
+            break;
+          case "comparison":
+            document.getElementById("comparisonView").style.display = "block";
+            renderComparisonView();
+            break;
+        }
+
+        updateStats();
+      }
+
+      function updateView() {
+        switch (currentView) {
+          case "table":
+            renderTable();
+            break;
+          case "progression":
+            renderProgressionView();
+            break;
+          case "comparison":
+            renderComparisonView();
+            break;
+        }
+        updateStats();
+      }
+
+      function renderTable() {
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML = "";
+
+        Object.entries(skillsData.groups).forEach(([groupKey, groupData]) => {
+          if (
+            currentFilters.group !== "all" &&
+            currentFilters.group !== groupKey
+          ) {
+            return;
+          }
+
+          const row = document.createElement("tr");
+          row.className = groupData.class;
+
+          // Group cell
+          const groupCell = document.createElement("td");
+          groupCell.className = "group-cell";
+          groupCell.innerHTML = `${groupData.name}`;
+          row.appendChild(groupCell);
+
+          // Skill cells
+          Object.entries(skillsData.skills).forEach(([skillKey, skillName]) => {
+            if (
+              currentFilters.skill !== "all" &&
+              currentFilters.skill !== skillKey
+            ) {
+              const emptyCell = document.createElement("td");
+              emptyCell.className = "content-cell empty-cell";
+              emptyCell.innerHTML = "מוסתר";
+              row.appendChild(emptyCell);
+              return;
+            }
+
+            const cell = document.createElement("td");
+            cell.className = "content-cell";
+
+            if (highlightedSkill === skillKey) {
+              cell.classList.add("highlighted");
+            }
+
+            const skillContent = skillsData.content[groupKey]?.[skillKey];
+
+            if (!skillContent || Object.keys(skillContent).length === 0) {
+              cell.innerHTML =
+                '<div style="text-align: center; color: #999; font-style: italic;">לא מפורט במסמך המקורי</div>';
+              cell.classList.add("empty-cell");
+            } else {
+              cell.innerHTML = renderSkillContent(
+                skillContent,
+                groupKey,
+                skillKey
+              );
+            }
+
+            row.appendChild(cell);
+          });
+
+          tbody.appendChild(row);
+        });
+
+        applySearchHighlight();
+      }
+
+      function renderSkillContent(skillContent, groupKey, skillKey) {
+        let html = "";
+
+        Object.entries(skillContent).forEach(([category, items]) => {
+          if (currentFilters.detail === "summary") {
+            html += `<div class="subcategory">${category} (${items.length} פריטים)</div>`;
+          } else if (currentFilters.detail === "categories") {
+            html += `<div class="subcategory">${category}</div>`;
+          } else {
+            html += `<div class="subcategory">${category}:</div>`;
+            html += "<ul>";
+            items.forEach((item) => {
+              html += `<li>${item}</li>`;
+            });
+            html += "</ul>";
+          }
+        });
+
+        return html;
+      }
+
+      function renderProgressionView() {
+        const container = document.getElementById("progressionContent");
+        container.innerHTML = "";
+
+        const skillToShow =
+          currentFilters.skill !== "all" ? currentFilters.skill : null;
+        const skillsToRender = skillToShow
+          ? [skillToShow]
+          : Object.keys(skillsData.skills);
+
+        skillsToRender.forEach((skillKey) => {
+          const skillDiv = document.createElement("div");
+          skillDiv.className = "skill-progression";
+
+          const title = document.createElement("h2");
+          title.className = "skill-title";
+          title.textContent = skillsData.skills[skillKey];
+          skillDiv.appendChild(title);
+
+          const stepsContainer = document.createElement("div");
+          stepsContainer.className = "progression-steps";
+
+          Object.entries(skillsData.groups).forEach(([groupKey, groupData]) => {
+            if (
+              currentFilters.group !== "all" &&
+              currentFilters.group !== groupKey
+            ) {
+              return;
+            }
+
+            const stepDiv = document.createElement("div");
+            stepDiv.className = "progression-step";
+            stepDiv.style.backgroundColor = groupData.color + "20";
+            stepDiv.style.borderLeft = `4px solid ${groupData.color}`;
+
+            const stepHeader = document.createElement("div");
+            stepHeader.className = "step-header";
+            stepHeader.style.backgroundColor = groupData.color;
+            stepHeader.textContent = groupData.name;
+            stepDiv.appendChild(stepHeader);
+
+            const stepContent = document.createElement("div");
+            stepContent.className = "step-content";
+
+            const skillContent = skillsData.content[groupKey]?.[skillKey];
+            if (skillContent && Object.keys(skillContent).length > 0) {
+              stepContent.innerHTML = renderSkillContent(
+                skillContent,
+                groupKey,
+                skillKey
+              );
+            } else {
+              stepContent.innerHTML =
+                '<div style="color: #999; font-style: italic;">לא מפורט</div>';
+            }
+
+            stepDiv.appendChild(stepContent);
+            stepsContainer.appendChild(stepDiv);
+          });
+
+          skillDiv.appendChild(stepsContainer);
+          container.appendChild(skillDiv);
+        });
+      }
+
+      function renderComparisonView() {
+        const container = document.getElementById("comparisonContent");
+        container.innerHTML = "";
+
+        const title = document.createElement("h2");
+        title.textContent = "השוואה בין קבוצות הכשרה";
+        title.style.textAlign = "center";
+        title.style.marginBottom = "30px";
+        container.appendChild(title);
+
+        const grid = document.createElement("div");
+        grid.className = "comparison-grid";
+
+        Object.entries(skillsData.groups).forEach(([groupKey, groupData]) => {
+          if (
+            currentFilters.group !== "all" &&
+            currentFilters.group !== groupKey
+          ) {
+            return;
+          }
+
+          const card = document.createElement("div");
+          card.className = "comparison-card";
+
+          const cardHeader = document.createElement("div");
+          cardHeader.className = "card-header";
+          cardHeader.style.backgroundColor = groupData.color;
+          cardHeader.textContent = groupData.name;
+          card.appendChild(cardHeader);
+
+          const cardContent = document.createElement("div");
+          let totalItems = 0;
+          let totalCategories = 0;
+
+          Object.entries(skillsData.skills).forEach(([skillKey, skillName]) => {
+            if (
+              currentFilters.skill !== "all" &&
+              currentFilters.skill !== skillKey
+            ) {
+              return;
+            }
+
+            const skillSection = document.createElement("div");
+            skillSection.style.marginBottom = "15px";
+
+            const skillTitle = document.createElement("h4");
+            skillTitle.textContent = skillName;
+            skillTitle.style.color = "#2c3e50";
+            skillTitle.style.borderBottom = "2px solid #ecf0f1";
+            skillTitle.style.paddingBottom = "5px";
+            skillSection.appendChild(skillTitle);
+
+            const skillContent = skillsData.content[groupKey]?.[skillKey];
+            if (skillContent && Object.keys(skillContent).length > 0) {
+              Object.entries(skillContent).forEach(([category, items]) => {
+                totalCategories++;
+                totalItems += items.length;
+
+                const categoryDiv = document.createElement("div");
+                categoryDiv.innerHTML = `<strong>${category}:</strong> ${items.length} פריטים`;
+                categoryDiv.style.fontSize = "0.9em";
+                categoryDiv.style.marginBottom = "5px";
+                skillSection.appendChild(categoryDiv);
+              });
+            } else {
+              const emptyDiv = document.createElement("div");
+              emptyDiv.textContent = "לא מפורט";
+              emptyDiv.style.color = "#999";
+              emptyDiv.style.fontStyle = "italic";
+              skillSection.appendChild(emptyDiv);
+            }
+
+            cardContent.appendChild(skillSection);
+          });
+
+          // Add summary statistics
+          const statsDiv = document.createElement("div");
+          statsDiv.style.marginTop = "20px";
+          statsDiv.style.padding = "15px";
+          statsDiv.style.backgroundColor = "#f8f9fa";
+          statsDiv.style.borderRadius = "8px";
+          statsDiv.innerHTML = `
+                    <div><strong>סה"כ קטגוריות:</strong> ${totalCategories}</div>
+                    <div><strong>סה"כ פריטי לימוד:</strong> ${totalItems}</div>
+                `;
+          cardContent.appendChild(statsDiv);
+
+          card.appendChild(cardContent);
+          grid.appendChild(card);
+        });
+
+        container.appendChild(grid);
+      }
+
+      function toggleSkillHighlight(skillKey) {
+        // Remove previous highlights
+        document.querySelectorAll(".skill-header").forEach((header) => {
+          header.classList.remove("highlighted");
+        });
+
+        document.querySelectorAll(".content-cell").forEach((cell) => {
+          cell.classList.remove("highlighted");
+        });
+
+        if (highlightedSkill === skillKey) {
+          highlightedSkill = null;
+        } else {
+          highlightedSkill = skillKey;
+
+          // Highlight header
+          document
+            .querySelector(`[data-skill="${skillKey}"]`)
+            .classList.add("highlighted");
+
+          // Highlight corresponding cells
+          const skillIndex =
+            Object.keys(skillsData.skills).indexOf(skillKey) + 1;
+          document
+            .querySelectorAll(`#tableBody tr td:nth-child(${skillIndex + 1})`)
+            .forEach((cell) => {
+              cell.classList.add("highlighted");
+            });
+        }
+      }
+
+      function applySearchHighlight() {
+        const searchTerm = currentFilters.search.toLowerCase();
+        if (!searchTerm) return;
+
+        document.querySelectorAll(".content-cell").forEach((cell) => {
+          const text = cell.textContent;
+          if (text.toLowerCase().includes(searchTerm)) {
+            const regex = new RegExp(`(${searchTerm})`, "gi");
+            cell.innerHTML = cell.innerHTML.replace(
+              regex,
+              '<span class="search-highlight">$1</span>'
+            );
+          }
+        });
+      }
+
+      function showTooltip(e) {
+        const tooltip = document.getElementById("tooltip");
+        const cell = e.target.closest(".content-cell");
+
+        if (cell && !cell.classList.contains("empty-cell")) {
+          let tooltipText = "לחץ לפרטים נוספים";
+          if (e.target.classList.contains("subcategory")) {
+            tooltipText = `קטגוריה: ${e.target.textContent}`;
+          }
+
+          tooltip.textContent = tooltipText;
+          tooltip.style.left = e.pageX + 10 + "px";
+          tooltip.style.top = e.pageY + 10 + "px";
+          tooltip.classList.add("show");
+        }
+      }
+
+      function hideTooltip() {
+        document.getElementById("tooltip").classList.remove("show");
+      }
+
+      function updateStats() {
+        let visibleGroups = 0;
+        let visibleSkills = 0;
+        let visibleCells = 0;
+        let searchResults = 0;
+
+        // Count visible groups
+        Object.keys(skillsData.groups).forEach((groupKey) => {
+          if (
+            currentFilters.group === "all" ||
+            currentFilters.group === groupKey
+          ) {
+            visibleGroups++;
+          }
+        });
+
+        // Count visible skills
+        Object.keys(skillsData.skills).forEach((skillKey) => {
+          if (
+            currentFilters.skill === "all" ||
+            currentFilters.skill === skillKey
+          ) {
+            visibleSkills++;
+          }
+        });
+
+        visibleCells = visibleGroups * visibleSkills;
+
+        // Count search results
+        if (currentFilters.search) {
+          document.querySelectorAll(".search-highlight").forEach(() => {
+            searchResults++;
+          });
+        }
+
+        document.getElementById("totalGroups").textContent = visibleGroups;
+        document.getElementById("totalSkills").textContent = visibleSkills;
+        document.getElementById("visibleCells").textContent = visibleCells;
+        document.getElementById("searchResults").textContent = searchResults;
+      }
+    </script>
+  </body>
+</html>
